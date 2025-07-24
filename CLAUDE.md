@@ -17,22 +17,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-Based on the project design, the following commands will be used:
+Based on the project structure with config files in config/ directory:
 
 ```bash
 # Install dependencies
 npm ci
 
-# Development server
+# Development server (uses config/vite.config.ts)
 npm run dev
 
-# Lint code
+# Lint code (uses config/eslint.config.js)
 npm run lint
 
-# Build for production
+# Build for production (uses config/tsconfig.json + config/vite.config.ts)
 npm run build
 
-# Type checking
+# Type checking (uses config/tsconfig.json)
 npm run type-check
 ```
 
@@ -42,7 +42,7 @@ npm run type-check
 ```
 root/
 ├─ public/
-│   └─ sample_players.csv   # ローカルテスト用サンプルデータ
+│   └─ vite.svg             # アイコン
 ├─ src/
 │   ├─ config.ts            # データソース切替 (env)
 │   ├─ hooks/
@@ -54,6 +54,26 @@ root/
 │   │   ├─ LineupEditor.tsx # 打順編集 (dnd-kit)
 │   │   └─ HistoryGrid.tsx  # 履歴表示
 │   └─ ...
+├─ config/                  # 設定ファイル群
+│   ├─ tsconfig.json        # TypeScript設定
+│   ├─ tsconfig.app.json    # アプリ用TypeScript設定
+│   ├─ tsconfig.node.json   # Node.js用TypeScript設定
+│   ├─ eslint.config.js     # ESLint設定
+│   └─ vite.config.ts       # Vite設定
+├─ data/                    # データファイル
+│   └─ sample_players.csv   # ローカルテスト用サンプルデータ
+├─ docs/                    # プロジェクト文書
+│   ├─ requirements.md      # 要件定義
+│   ├─ design.md           # 設計書
+│   ├─ task.md             # 実装タスク
+│   ├─ progress.md         # 進捗管理
+│   └─ development_workflow.md
+├─ reports/                 # 進捗レポート
+│   ├─ README.md
+│   ├─ daily-report-template.md
+│   └─ daily-report-YYYY-MM-DD-HHmmSS.md
+├─ logs/                    # ログファイル
+│   └─ server.log
 └─ .github/
     └─ workflows/deploy.yml # GitHub Pages デプロイ
 ```
