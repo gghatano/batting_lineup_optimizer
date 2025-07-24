@@ -68,9 +68,9 @@ root/
   - [x] tsconfig.json設定
   - [x] ESLint, Prettier設定
   - [x] .env.local設定（VITE_DATA_MODE=local）
-- [ ] タスク1-2: サンプルCSVデータの生成
-  - [ ] public/sample_players.csv作成（12球団、各5選手以上）
-  - [ ] 必要列：team, name, PA, 1B, 2B, 3B, HR, SO, BB, OUT_OTHER
+- [x] タスク1-2: サンプルCSVデータの生成 ✅ 完了 (2025-07-24)
+  - [x] data/sample_players.csv作成（12球団、各6選手・計72選手）
+  - [x] 必要列：team, name, PA, 1B, 2B, 3B, HR, SO, BB, OUT_OTHER
 - [x] タスク1-3: 基本的なディレクトリ構造の作成 ✅ 完了 (2025-07-24)
   - [x] src/components/, src/hooks/, src/worker/ディレクトリ作成
   - [x] src/config.ts作成（データソース切替機構）

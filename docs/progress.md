@@ -1,13 +1,13 @@
 # progress.md (自動更新される進捗ファイル)
 
-## 全体進捗: 20% (1/5タスク完了)
+## 全体進捗: 25% (2/5タスク完了)
 
-### Phase 1: 基盤構築 [完了: 80%]
+### Phase 1: 基盤構築 [完了: 100%]
 - [x] プロジェクト初期化 (Vite + React + TypeScript)
 - [x] 依存関係設定 (package.json完了)
 - [x] 基本ディレクトリ構成 (src/components, src/hooks, src/worker)
 - [x] 環境設定ファイル作成 (.env.local, tsconfig.json, ESLint, Prettier)
-- [ ] CI/CD設定
+- [x] サンプルCSVデータ生成 (data/sample_players.csv)
 
 ### Phase 2: コア機能実装 [完了: 0%]
 - [ ] データ取得機能実装
@@ -31,14 +31,15 @@
 - [ ] 本番環境確認
 
 ## 現在のタスク
-✅ タスク1-1: Vite + React + TypeScript プロジェクト初期化 完了
-- 開発サーバー起動確認済み (http://localhost:5173/)
-- ブラウザ表示確認済み（「野球打順最適化アプリ」表示）
+✅ タスク1-2: サンプルCSVデータの生成 完了
+- data/sample_players.csv作成完了（12球団、各6選手・計72選手）
+- CSV形式検証済み（全必要列含む）
 
 ## 次回予定タスク
-タスク1-2: サンプルCSVデータの生成
-- public/sample_players.csv作成（12球団、各5選手以上）
-- 必要列：team, name, PA, 1B, 2B, 3B, HR, SO, BB, OUT_OTHER
+タスク2-1: CSV取得・パース機能の実装
+- PapaParseによるCSV解析機能
+- TanStack QueryによるCSVデータのキャッシュ機能
+- usePlayers.tsフック実装
 
 ## 課題・懸念点
 - ✅ 解決済み: 開発サーバー接続問題（Vite設定の簡素化で解決）
@@ -53,6 +54,7 @@
 - ✅ 開発サーバー動作確認 (localhost:5173)
 - ✅ ビルドテスト・品質チェック通過
 - ✅ GitHub Pages用設定
+- ✅ サンプルCSVデータ生成 (data/sample_players.csv, 12球団72選手)
 
 ## 技術仕様確認済み
 - バンドルサイズ: 142.63 KB (gzip: 45.90 KB)
@@ -61,4 +63,4 @@
 - コード品質: ESLint・TypeScript型チェック通過
 
 ## 最終更新
-2025-07-24 18:56 - タスク1-1完了・動作確認済み
+2025-07-24 - タスク1-2完了・CSVデータ生成完了（Phase 1 完了）
