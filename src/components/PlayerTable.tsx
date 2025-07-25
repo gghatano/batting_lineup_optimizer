@@ -1,0 +1,206 @@
+import { useState, useMemo } from 'react'
+import { Player, TeamName } from '../types/Player'
+
+interface PlayerTableProps {
+  players: Player[]
+  selectedPlayers: Player[]
+  onPlayerAdd: (player: Player) => void
+}
+
+const TEAMS: TeamName[] = [
+  'Giants', 'Tigers', 'Dragons', 'Swallows', 'BayStars', 'Carp',
+  'Lions', 'Eagles', 'Marines', 'Fighters', 'Buffaloes', 'Hawks'
+]
+
+export const PlayerTable = ({ 
+  players, 
+  selectedPlayers, 
+  onPlayerAdd 
+}: PlayerTableProps) => {
+  const [selectedTeam, setSelectedTeam] = useState<TeamName | 'all'>('all')
+
+  const filteredPlayers = useMemo(() => {
+    if (selectedTeam === 'all') return players
+    return players.filter(player => player.team === selectedTeam)
+  }, [players, selectedTeam])
+
+  const calculateBattingAverage = (player: Player) => {
+    const hits = player['1B'] + player['2B'] + player['3B'] + player.HR
+    const atBats = player.PA - player.BB
+    return atBats > 0 ? (hits / atBats).toFixed(3) : '0.000'
+  }
+
+  const calculateOBP = (player: Player) => {
+    const hits = player['1B'] + player['2B'] + player['3B'] + player.HR
+    const onBase = hits + player.BB
+    return player.PA > 0 ? (onBase / player.PA).toFixed(3) : '0.000'
+  }
+
+  const calculateSLG = (player: Player) => {
+    const totalBases = player['1B'] + (player['2B'] * 2) + (player['3B'] * 3) + (player.HR * 4)
+    const atBats = player.PA - player.BB
+    return atBats > 0 ? (totalBases / atBats).toFixed(3) : '0.000'
+  }
+
+  const getPlayerSelectCount = (player: Player) => {
+    return selectedPlayers.filter(selected => 
+      selected.team === player.team && selected.name === player.name
+    ).length
+  }
+
+  const canAddMore = selectedPlayers.length < 9
+
+  const handlePlayerAdd = (player: Player) => {
+    if (canAddMore) {
+      onPlayerAdd(player)
+    }
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div>
+          <label htmlFor="team-select" style={{ marginRight: '10px', fontWeight: 'bold', color: '#333' }}>
+            球団選択:
+          </label>
+          <select
+            id="team-select"
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value as TeamName | 'all')}
+            style={{ 
+              padding: '8px 12px', 
+              fontSize: '14px', 
+              borderRadius: '4px', 
+              border: '1px solid #ccc' 
+            }}
+          >
+            <option value="all">全球団</option>
+            {TEAMS.map(team => (
+              <option key={team} value={team}>{team}</option>
+            ))}
+          </select>
+        </div>
+        
+        <div style={{ 
+          padding: '8px 12px', 
+          backgroundColor: selectedPlayers.length === 9 ? '#e8f5e8' : '#f0f0f0',
+          borderRadius: '4px',
+          fontWeight: 'bold',
+          color: '#333'
+        }}>
+          選択中: {selectedPlayers.length}/9名
+        </div>
+      </div>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ 
+          width: '100%', 
+          borderCollapse: 'collapse', 
+          fontSize: '14px',
+          minWidth: '800px'
+        }}>
+          <thead>
+            <tr style={{ backgroundColor: '#f5f5f5' }}>
+              <th style={{ border: '1px solid #ddd', padding: '8px', width: '80px', color: '#333' }}>追加</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>球団</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>名前</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>打席</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>打率</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>出塁率</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>長打率</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>単打</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>二塁打</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>三塁打</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>本塁打</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>四球</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>三振</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPlayers.map((player, index) => {
+              const selectCount = getPlayerSelectCount(player)
+              return (
+                <tr 
+                  key={`${player.team}-${player.name}-${index}`}
+                  style={{ 
+                    backgroundColor: selectCount > 0 ? '#e3f2fd' : 'white',
+                    color: '#333',
+                    opacity: !canAddMore ? 0.7 : 1
+                  }}
+                >
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>
+                    <button
+                      onClick={() => handlePlayerAdd(player)}
+                      disabled={!canAddMore}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '12px',
+                        backgroundColor: canAddMore ? '#2196f3' : '#ccc',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: canAddMore ? 'pointer' : 'not-allowed',
+                        minWidth: '50px'
+                      }}
+                    >
+                      追加
+                      {selectCount > 0 && (
+                        <span style={{ 
+                          marginLeft: '4px', 
+                          backgroundColor: 'rgba(255,255,255,0.3)', 
+                          borderRadius: '50%', 
+                          padding: '2px 6px',
+                          fontSize: '10px'
+                        }}>
+                          {selectCount}
+                        </span>
+                      )}
+                    </button>
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>{player.team}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', color: '#333', fontWeight: selectCount > 0 ? 'bold' : 'normal' }}>
+                    {player.name}
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.PA}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>
+                    {calculateBattingAverage(player)}
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>
+                    {calculateOBP(player)}
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>
+                    {calculateSLG(player)}
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player['1B']}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player['2B']}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player['3B']}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.HR}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.BB}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.SO}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredPlayers.length === 0 && (
+        <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>
+          該当する選手がいません
+        </p>
+      )}
+
+      {selectedPlayers.length === 9 && (
+        <div style={{ 
+          marginTop: '20px', 
+          padding: '15px', 
+          backgroundColor: '#e8f5e8', 
+          borderRadius: '4px',
+          border: '1px solid #4caf50'
+        }}>
+          <strong>✓ 9名の選手が選択されました！打順編集に進めます。</strong>
+        </div>
+      )}
+    </div>
+  )
+}
