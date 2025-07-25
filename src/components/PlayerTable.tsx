@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Player, TeamName } from '../types/Player'
+import { Player } from '../types/Player'
 
 interface PlayerTableProps {
   players: Player[]
@@ -7,44 +7,29 @@ interface PlayerTableProps {
   onPlayerAdd: (player: Player) => void
 }
 
-const TEAMS: TeamName[] = [
-  'Giants', 'Tigers', 'Dragons', 'Swallows', 'BayStars', 'Carp',
-  'Lions', 'Eagles', 'Marines', 'Fighters', 'Buffaloes', 'Hawks'
-]
-
 export const PlayerTable = ({ 
   players, 
   selectedPlayers, 
   onPlayerAdd 
 }: PlayerTableProps) => {
-  const [selectedTeam, setSelectedTeam] = useState<TeamName | 'all'>('all')
+  const [selectedTeam, setSelectedTeam] = useState<string>('all')
+
+  // 利用可能なチーム一覧を動的に生成
+  const availableTeams = useMemo(() => {
+    const teams = Array.from(new Set(players.map(player => player.チーム)))
+    return teams.sort()
+  }, [players])
 
   const filteredPlayers = useMemo(() => {
     if (selectedTeam === 'all') return players
-    return players.filter(player => player.team === selectedTeam)
+    return players.filter(player => player.チーム === selectedTeam)
   }, [players, selectedTeam])
 
-  const calculateBattingAverage = (player: Player) => {
-    const hits = player['1B'] + player['2B'] + player['3B'] + player.HR
-    const atBats = player.PA - player.BB
-    return atBats > 0 ? (hits / atBats).toFixed(3) : '0.000'
-  }
-
-  const calculateOBP = (player: Player) => {
-    const hits = player['1B'] + player['2B'] + player['3B'] + player.HR
-    const onBase = hits + player.BB
-    return player.PA > 0 ? (onBase / player.PA).toFixed(3) : '0.000'
-  }
-
-  const calculateSLG = (player: Player) => {
-    const totalBases = player['1B'] + (player['2B'] * 2) + (player['3B'] * 3) + (player.HR * 4)
-    const atBats = player.PA - player.BB
-    return atBats > 0 ? (totalBases / atBats).toFixed(3) : '0.000'
-  }
+  // 新しいデータ形式では既に計算済みの値を使用
 
   const getPlayerSelectCount = (player: Player) => {
     return selectedPlayers.filter(selected => 
-      selected.team === player.team && selected.name === player.name
+      selected.チーム === player.チーム && selected.背番号 === player.背番号 && selected.選手名 === player.選手名
     ).length
   }
 
@@ -61,12 +46,12 @@ export const PlayerTable = ({
       <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
         <div>
           <label htmlFor="team-select" style={{ marginRight: '10px', fontWeight: 'bold', color: '#333' }}>
-            球団選択:
+            選手絞り込み:
           </label>
           <select
             id="team-select"
             value={selectedTeam}
-            onChange={(e) => setSelectedTeam(e.target.value as TeamName | 'all')}
+            onChange={(e) => setSelectedTeam(e.target.value)}
             style={{ 
               padding: '8px 12px', 
               fontSize: '14px', 
@@ -74,8 +59,8 @@ export const PlayerTable = ({
               border: '1px solid #ccc' 
             }}
           >
-            <option value="all">全球団</option>
-            {TEAMS.map(team => (
+            <option value="all">全選手</option>
+            {availableTeams.map(team => (
               <option key={team} value={team}>{team}</option>
             ))}
           </select>
@@ -101,19 +86,19 @@ export const PlayerTable = ({
         }}>
           <thead>
             <tr style={{ backgroundColor: '#f5f5f5' }}>
-              <th style={{ border: '1px solid #ddd', padding: '8px', width: '80px', color: '#333' }}>追加</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>球団</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>名前</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>打席</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>チーム</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>背番号</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>選手名</th>
               <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>打率</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>出塁率</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>長打率</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>単打</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>打席</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>单打</th>
               <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>二塁打</th>
               <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>三塁打</th>
               <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>本塁打</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>四球</th>
               <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>三振</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>四球</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>死球</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px', width: '80px', color: '#333' }}>追加</th>
             </tr>
           </thead>
           <tbody>
@@ -121,13 +106,29 @@ export const PlayerTable = ({
               const selectCount = getPlayerSelectCount(player)
               return (
                 <tr 
-                  key={`${player.team}-${player.name}-${index}`}
+                  key={`${player.背番号}-${player.選手名}-${index}`}
                   style={{ 
                     backgroundColor: selectCount > 0 ? '#e3f2fd' : 'white',
                     color: '#333',
                     opacity: !canAddMore ? 0.7 : 1
                   }}
                 >
+                  <td style={{ border: '1px solid #ddd', padding: '8px', color: '#333', textAlign: 'center' }}>{player.チーム}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', color: '#333', textAlign: 'center' }}>{player.背番号}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', color: '#333', fontWeight: selectCount > 0 ? 'bold' : 'normal' }}>
+                    {player.選手名}
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>
+                    {player.打率.toFixed(3)}
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.打席数}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.安打 - player.二塁打 - player.三塁打 - player.本塁打}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.二塁打}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.三塁打}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.本塁打}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.三振}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.四球}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.死球}</td>
                   <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>
                     <button
                       onClick={() => handlePlayerAdd(player)}
@@ -157,26 +158,6 @@ export const PlayerTable = ({
                       )}
                     </button>
                   </td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>{player.team}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', color: '#333', fontWeight: selectCount > 0 ? 'bold' : 'normal' }}>
-                    {player.name}
-                  </td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.PA}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>
-                    {calculateBattingAverage(player)}
-                  </td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>
-                    {calculateOBP(player)}
-                  </td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>
-                    {calculateSLG(player)}
-                  </td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player['1B']}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player['2B']}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player['3B']}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.HR}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.BB}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right', color: '#333' }}>{player.SO}</td>
                 </tr>
               )
             })}

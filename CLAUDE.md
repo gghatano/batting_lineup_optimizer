@@ -61,7 +61,7 @@ root/
 │   ├─ eslint.config.js     # ESLint設定
 │   └─ vite.config.ts       # Vite設定
 ├─ data/                    # データファイル
-│   └─ sample_players.csv   # ローカルテスト用サンプルデータ
+│   └─ sample_data.csv      # 実際の野球統計データ（日本語フィールド）
 ├─ docs/                    # プロジェクト文書
 │   ├─ requirements.md      # 要件定義
 │   ├─ design.md           # 設計書

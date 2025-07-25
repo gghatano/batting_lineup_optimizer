@@ -1,15 +1,33 @@
 export interface Player {
-  team: string
-  name: string
-  PA: number    // Plate Appearances
-  '1B': number  // Singles
-  '2B': number  // Doubles
-  '3B': number  // Triples
-  HR: number    // Home Runs
-  SO: number    // Strikeouts
-  BB: number    // Walks
-  OUT_OTHER: number // Other outs
+  チーム: string
+  背番号: number
+  選手名: string
+  打率: number
+  試合: number
+  打席数: number
+  打数: number
+  得点: number
+  安打: number
+  二塁打: number
+  三塁打: number
+  本塁打: number
+  塁打: number
+  打点: number
+  盗塁: number
+  盗塁刺: number
+  犠打: number
+  犠飛: number
+  四球: number
+  敬遠: number
+  死球: number
+  三振: number
+  併殺打: number
+  出塁率: number
+  長打率: number
 }
+
+// チーム名の型定義
+export type TeamName = string
 
 export interface PlayerStats {
   player: Player
@@ -18,17 +36,3 @@ export interface PlayerStats {
   sluggingPercentage: number
   ops: number
 }
-
-export type TeamName = 
-  | 'Giants' 
-  | 'Tigers' 
-  | 'Dragons' 
-  | 'Swallows' 
-  | 'BayStars' 
-  | 'Carp'
-  | 'Lions' 
-  | 'Eagles' 
-  | 'Marines' 
-  | 'Fighters' 
-  | 'Buffaloes' 
-  | 'Hawks'
