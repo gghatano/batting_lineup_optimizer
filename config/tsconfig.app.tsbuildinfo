@@ -1,1 +1,1 @@
-{"root":["../src/app.tsx","../src/config.ts","../src/main.tsx","../src/vite-env.d.ts","../src/components/playertable.tsx","../src/hooks/useplayers.ts","../src/types/player.ts"],"version":"5.6.3"}
+{"root":["../src/app.tsx","../src/config.ts","../src/main.tsx","../src/vite-env.d.ts","../src/components/badge.tsx","../src/components/button.tsx","../src/components/input.tsx","../src/components/loadingspinner.tsx","../src/components/playertable.tsx","../src/hooks/useplayers.ts","../src/styles/atlassian-theme.ts","../src/types/player.ts"],"version":"5.6.3"}

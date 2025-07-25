@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Player } from '../types/Player'
+import { theme } from '../styles/atlassian-theme'
 
 interface PlayerTableProps {
   players: Player[]
@@ -43,9 +44,19 @@ export const PlayerTable = ({
 
   return (
     <div>
-      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+      <div style={{ 
+        marginBottom: theme.spacing.xl, 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: theme.spacing.xl 
+      }}>
         <div>
-          <label htmlFor="team-select" style={{ marginRight: '10px', fontWeight: 'bold', color: '#333' }}>
+          <label htmlFor="team-select" style={{ 
+            marginRight: theme.spacing.sm, 
+            fontWeight: theme.typography.fontWeight.medium, 
+            color: theme.colors.text,
+            fontSize: theme.typography.fontSize.base
+          }}>
             選手絞り込み:
           </label>
           <select
@@ -53,10 +64,13 @@ export const PlayerTable = ({
             value={selectedTeam}
             onChange={(e) => setSelectedTeam(e.target.value)}
             style={{ 
-              padding: '8px 12px', 
-              fontSize: '14px', 
-              borderRadius: '4px', 
-              border: '1px solid #ccc' 
+              padding: `${theme.spacing.sm} ${theme.spacing.md}`, 
+              fontSize: theme.typography.fontSize.base, 
+              borderRadius: theme.borderRadius.sm, 
+              border: `1px solid ${theme.colors.border}`,
+              backgroundColor: theme.colors.surface,
+              color: theme.colors.text,
+              outline: 'none'
             }}
           >
             <option value="all">全選手</option>
@@ -67,11 +81,12 @@ export const PlayerTable = ({
         </div>
         
         <div style={{ 
-          padding: '8px 12px', 
-          backgroundColor: selectedPlayers.length === 9 ? '#e8f5e8' : '#f0f0f0',
-          borderRadius: '4px',
-          fontWeight: 'bold',
-          color: '#333'
+          padding: `${theme.spacing.sm} ${theme.spacing.md}`, 
+          backgroundColor: selectedPlayers.length === 9 ? theme.colors.successLight : theme.colors.background,
+          borderRadius: theme.borderRadius.sm,
+          fontWeight: theme.typography.fontWeight.medium,
+          color: selectedPlayers.length === 9 ? theme.colors.success : theme.colors.text,
+          border: `1px solid ${selectedPlayers.length === 9 ? theme.colors.success : theme.colors.border}`
         }}>
           選択中: {selectedPlayers.length}/9名
         </div>
@@ -81,11 +96,12 @@ export const PlayerTable = ({
         <table style={{ 
           width: '100%', 
           borderCollapse: 'collapse', 
-          fontSize: '14px',
-          minWidth: '800px'
+          fontSize: theme.typography.fontSize.base,
+          minWidth: '800px',
+          backgroundColor: theme.colors.surface
         }}>
           <thead>
-            <tr style={{ backgroundColor: '#f5f5f5' }}>
+            <tr style={{ backgroundColor: theme.colors.background }}>
               <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>チーム</th>
               <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>背番号</th>
               <th style={{ border: '1px solid #ddd', padding: '8px', color: '#333' }}>選手名</th>
