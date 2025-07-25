@@ -294,16 +294,60 @@ function App() {
               boxShadow: theme.shadows.md
             }}>
               <h3 style={{ 
-                margin: `0 0 ${theme.spacing.xl} 0`, 
+                margin: `0 0 ${theme.spacing.lg} 0`, 
                 textAlign: 'center', 
                 color: theme.colors.text,
                 fontSize: theme.typography.fontSize.lg,
                 fontWeight: theme.typography.fontWeight.semibold
               }}>打順</h3>
+              
+              {selectedPlayers.length === 9 && (
+                <div style={{ 
+                  marginBottom: theme.spacing.lg,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: theme.spacing.sm
+                }}>
+                  <div style={{ 
+                    padding: theme.spacing.md, 
+                    backgroundColor: theme.colors.success, 
+                    color: theme.colors.secondary,
+                    borderRadius: theme.borderRadius.md,
+                    textAlign: 'center',
+                    fontWeight: theme.typography.fontWeight.semibold,
+                    boxShadow: theme.shadows.sm,
+                    fontSize: theme.typography.fontSize.sm
+                  }}>
+                    ✓ 打順完成！
+                  </div>
+                  <div style={{ display: 'flex', gap: theme.spacing.xs }}>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setAppMode('simulation')}
+                      style={{ flex: 1 }}
+                    >
+                      実験開始
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedPlayers([])
+                        setAppMode('selection')
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      選手変更
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
               <div style={{ 
                 display: 'flex', 
                 flexDirection: 'column', 
-                gap: theme.spacing.sm 
+                gap: '2px'
               }}>
                 {Array.from({ length: 9 }, (_, index) => {
                   const player = selectedPlayers[index]
@@ -311,16 +355,16 @@ function App() {
                     <div
                       key={`batting-order-${index}`}
                       style={{
-                        padding: theme.spacing.md,
+                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
                         backgroundColor: player ? theme.colors.primary : theme.colors.surface,
                         color: player ? theme.colors.secondary : theme.colors.textMuted,
-                        border: `2px solid ${player ? theme.colors.primary : theme.colors.border}`,
-                        borderRadius: theme.borderRadius.md,
-                        minHeight: '60px',
+                        border: `1px solid ${player ? theme.colors.primary : theme.colors.border}`,
+                        borderRadius: theme.borderRadius.sm,
+                        minHeight: '36px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        fontSize: theme.typography.fontSize.base,
+                        fontSize: theme.typography.fontSize.sm,
                         fontWeight: player ? theme.typography.fontWeight.semibold : theme.typography.fontWeight.normal,
                         boxShadow: player ? theme.shadows.sm : 'none',
                         transition: 'all 0.2s ease'
@@ -328,33 +372,34 @@ function App() {
                     >
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span style={{ 
-                          minWidth: '20px', 
+                          minWidth: '18px', 
                           fontWeight: theme.typography.fontWeight.bold, 
-                          marginRight: theme.spacing.sm 
+                          marginRight: theme.spacing.xs,
+                          fontSize: theme.typography.fontSize.sm
                         }}>
                           {index + 1}.
                         </span>
                         {player ? (
                           <div>
-                            <div style={{ marginBottom: '2px' }}>{player.選手名} (#{player.背番号})</div>
+                            <div style={{ marginBottom: '0px', lineHeight: '1.1' }}>
+                              {player.選手名} (#{player.背番号})
+                            </div>
                             <div style={{ 
                               fontSize: theme.typography.fontSize.xs, 
                               opacity: 0.8, 
-                              marginBottom: '2px' 
-                            }}>{player.チーム}</div>
-                            <div style={{ 
-                              fontSize: theme.typography.fontSize.xs, 
-                              opacity: 0.9, 
                               display: 'flex', 
-                              gap: theme.spacing.sm 
+                              gap: theme.spacing.xs,
+                              lineHeight: '1.0'
                             }}>
-                              <span>打率: {calculateBattingAverage(player)}</span>
-                              <span>本塁打: {player.本塁打}</span>
-                              <span>打点: {player.打点}</span>
+                              <span>{player.チーム}</span>
+                              <span>打率{calculateBattingAverage(player)}</span>
+                              <span>{player.本塁打}HR</span>
                             </div>
                           </div>
                         ) : (
-                          <span style={{ fontStyle: 'italic' }}>選手を選択してください</span>
+                          <span style={{ fontStyle: 'italic', fontSize: theme.typography.fontSize.sm }}>
+                            選手を選択してください
+                          </span>
                         )}
                       </div>
                       {player && (
@@ -365,11 +410,11 @@ function App() {
                           style={{
                             backgroundColor: 'rgba(255,255,255,0.2)',
                             borderRadius: '50%',
-                            width: '24px',
-                            height: '24px',
-                            minHeight: '24px',
+                            width: '20px',
+                            height: '20px',
+                            minHeight: '20px',
                             padding: '0',
-                            fontSize: theme.typography.fontSize.sm
+                            fontSize: theme.typography.fontSize.xs
                           }}
                           title="削除"
                         >
@@ -380,46 +425,6 @@ function App() {
                   )
                 })}
               </div>
-              
-              {selectedPlayers.length === 9 && (
-                <div style={{ 
-                  marginTop: theme.spacing.xl,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: theme.spacing.md
-                }}>
-                  <div style={{ 
-                    padding: theme.spacing.lg, 
-                    backgroundColor: theme.colors.success, 
-                    color: theme.colors.secondary,
-                    borderRadius: theme.borderRadius.md,
-                    textAlign: 'center',
-                    fontWeight: theme.typography.fontWeight.semibold,
-                    boxShadow: theme.shadows.sm
-                  }}>
-                    ✓ 打順完成！
-                  </div>
-                  <div style={{ display: 'flex', gap: theme.spacing.sm }}>
-                    <Button
-                      variant="primary"
-                      onClick={() => setAppMode('simulation')}
-                      style={{ flex: 1 }}
-                    >
-                      実験開始
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        setSelectedPlayers([])
-                        setAppMode('selection')
-                      }}
-                      style={{ flex: 1 }}
-                    >
-                      選手を変更
-                    </Button>
-                  </div>
-                </div>
-              )}
               
               {selectedPlayers.length > 0 && selectedPlayers.length < 9 && (
                 <div style={{ 
@@ -450,6 +455,7 @@ function App() {
             <SimulationParameters
               onStartSimulation={handleStartSimulation}
               isRunning={isSimulationRunning}
+              selectedPlayers={selectedPlayers}
             />
             
             {/* 右側: シミュレーション結果 */}
