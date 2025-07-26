@@ -1,6 +1,7 @@
 import React from 'react'
 import { Badge } from './Badge'
 import { theme } from '../styles/atlassian-theme'
+import { GameDetail } from '../types/GameDetail'
 
 export interface SimulationResult {
   averageScore: number
@@ -11,6 +12,9 @@ export interface SimulationResult {
   totalGames: number
   optimizedLineup?: string[]
   improvementPercent?: number
+  scores?: number[]
+  executionTime?: number
+  gameDetail?: GameDetail
 }
 
 interface SimulationResultsProps {
@@ -108,6 +112,158 @@ export const SimulationResults: React.FC<SimulationResultsProps> = ({
     )
   }
 
+  // 詳細表示モードの場合
+  if (result.gameDetail) {
+    return (
+      <div style={{
+        flex: 1,
+        padding: theme.spacing.xl,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.borderRadius.lg,
+        border: `1px solid ${theme.colors.border}`,
+        boxShadow: theme.shadows.md,
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {/* ヘッダー */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: theme.spacing.lg,
+          paddingBottom: theme.spacing.md,
+          borderBottom: `1px solid ${theme.colors.border}`
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing.sm
+          }}>
+            <h3 style={{
+              margin: 0,
+              fontSize: theme.typography.fontSize.lg,
+              color: theme.colors.text,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}>
+              ⚾ 詳細試合記録
+            </h3>
+            <Badge variant="primary" size="md">
+              最終得点: {result.gameDetail.finalScore}点
+            </Badge>
+          </div>
+          <div style={{
+            fontSize: theme.typography.fontSize.sm,
+            color: theme.colors.textSubtle,
+            display: 'flex',
+            gap: theme.spacing.lg
+          }}>
+            <span>総打席数: {result.gameDetail.totalAtBats}</span>
+            <span>試合時間: {result.gameDetail.gameTime.toFixed(0)}ms</span>
+          </div>
+        </div>
+        
+        {/* 詳細試合記録 - メイン表示 */}
+        <div style={{
+          flex: 1,
+          border: `1px solid ${theme.colors.border}`,
+          borderRadius: theme.borderRadius.sm,
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            height: '100%',
+            overflowY: 'auto'
+          }}>
+            {result.gameDetail.innings.map((inning, inningIndex) => (
+              <div key={inningIndex} style={{
+                borderBottom: inningIndex < result.gameDetail!.innings.length - 1 ? `1px solid ${theme.colors.border}` : 'none'
+              }}>
+                <div style={{
+                  padding: theme.spacing.md,
+                  backgroundColor: theme.colors.primary,
+                  color: theme.colors.secondary,
+                  fontSize: theme.typography.fontSize.base,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  borderBottom: `1px solid ${theme.colors.border}`,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <span>{inning.inning}回</span>
+                  <span>{inning.runs}得点</span>
+                </div>
+                
+                {inning.atBats.map((atBat, atBatIndex) => (
+                  <div key={atBatIndex} style={{
+                    padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                    borderBottom: atBatIndex < inning.atBats.length - 1 ? `1px solid ${theme.colors.border}` : 'none',
+                    fontSize: theme.typography.fontSize.sm,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: theme.spacing.md,
+                    backgroundColor: atBat.runs > 0 ? theme.colors.successLight : 'transparent'
+                  }}>
+                    <div style={{ 
+                      minWidth: '50px',
+                      fontWeight: theme.typography.fontWeight.bold,
+                      color: theme.colors.primary
+                    }}>
+                      {atBat.batterPosition}番
+                    </div>
+                    <div style={{ 
+                      minWidth: '100px',
+                      fontWeight: theme.typography.fontWeight.medium
+                    }}>
+                      {atBat.batter.選手名}
+                    </div>
+                    <div style={{ 
+                      minWidth: '60px',
+                      color: theme.colors.textSubtle
+                    }}>
+                      {atBat.outs}アウト
+                    </div>
+                    <div style={{ 
+                      minWidth: '70px',
+                      fontWeight: theme.typography.fontWeight.bold,
+                      color: atBat.result === 'homerun' ? theme.colors.warning :
+                            atBat.result === 'triple' ? '#9B59B6' :
+                            atBat.result === 'double' ? '#3498DB' :
+                            atBat.result === 'single' ? theme.colors.success :
+                            atBat.result === 'walk' || atBat.result === 'hbp' ? '#F39C12' :
+                            theme.colors.danger
+                    }}>
+                      {atBat.description}
+                    </div>
+                    <div style={{ 
+                      minWidth: '100px',
+                      fontSize: theme.typography.fontSize.xs,
+                      color: theme.colors.textSubtle
+                    }}>
+                      {atBat.runnersAfter}
+                    </div>
+                    {atBat.runs > 0 && (
+                      <div style={{
+                        marginLeft: 'auto',
+                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                        backgroundColor: theme.colors.success,
+                        color: theme.colors.secondary,
+                        borderRadius: theme.borderRadius.sm,
+                        fontSize: theme.typography.fontSize.sm,
+                        fontWeight: theme.typography.fontWeight.bold
+                      }}>
+                        +{atBat.runs}点
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // 通常のシミュレーション結果表示
   return (
     <div style={{
       flex: 1,
@@ -325,7 +481,7 @@ export const SimulationResults: React.FC<SimulationResultsProps> = ({
             <div>分散: {result.variance.toFixed(3)}</div>
             <div>試行回数: {result.totalGames.toLocaleString()}回</div>
             <div>信頼区間: 95%</div>
-            <div>計算時間: 推定値</div>
+            <div>計算時間: {result.executionTime ? `${result.executionTime.toFixed(0)}ms` : '未計測'}</div>
           </div>
         </div>
       </div>

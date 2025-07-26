@@ -20,15 +20,17 @@ export const SimulationParameters: React.FC<SimulationParametersProps> = ({
   const [numberOfGames, setNumberOfGames] = useState<string>('1000')
   const [optimizationMethod, setOptimizationMethod] = useState<SimulationParams['optimizationMethod']>('none')
   const [maxIterations, setMaxIterations] = useState<string>('50')
+  const [showDetailedView, setShowDetailedView] = useState<boolean>(false)
   const [benchmarkResult, setBenchmarkResult] = useState<{ averageTimePerGame: number; totalTime: number } | null>(null)
   const [isBenchmarking, setIsBenchmarking] = useState<boolean>(false)
   const [estimatedTime, setEstimatedTime] = useState<string>('')
 
   const handleStartSimulation = () => {
     const params: SimulationParams = {
-      numberOfGames: parseInt(numberOfGames) || 1000,
-      optimizationMethod,
-      maxIterations: parseInt(maxIterations) || 50
+      numberOfGames: showDetailedView ? 1 : (parseInt(numberOfGames) || 1000),
+      optimizationMethod: showDetailedView ? 'none' : optimizationMethod,
+      maxIterations: parseInt(maxIterations) || 50,
+      showDetailedView
     }
     onStartSimulation(params)
   }
@@ -245,6 +247,51 @@ export const SimulationParameters: React.FC<SimulationParametersProps> = ({
             </div>
           </div>
         )}
+
+        {/* 詳細表示オプション */}
+        <div>
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing.sm,
+            fontSize: theme.typography.fontSize.base,
+            fontWeight: theme.typography.fontWeight.medium,
+            color: theme.colors.text,
+            cursor: 'pointer'
+          }}>
+            <input
+              type="checkbox"
+              checked={showDetailedView}
+              onChange={(e) => setShowDetailedView(e.target.checked)}
+              disabled={isRunning}
+              style={{
+                width: '16px',
+                height: '16px',
+                cursor: 'pointer'
+              }}
+            />
+            詳細表示モード
+            <Tooltip
+              content="1試合分の全打席結果を詳細に表示します。試合数は自動的に1試合に変更されます。"
+              position="right"
+            >
+              <InfoIcon size="sm" />
+            </Tooltip>
+          </label>
+          {showDetailedView && (
+            <div style={{
+              marginTop: theme.spacing.xs,
+              padding: theme.spacing.sm,
+              backgroundColor: theme.colors.warningLight,
+              borderRadius: theme.borderRadius.sm,
+              border: `1px solid ${theme.colors.warning}`,
+              fontSize: theme.typography.fontSize.sm,
+              color: theme.colors.warning
+            }}>
+              ⚠️ 詳細表示モードでは1試合のみ実行されます
+            </div>
+          )}
+        </div>
 
         {/* 実行ボタン */}
         <Button
