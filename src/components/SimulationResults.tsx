@@ -1,7 +1,10 @@
 import React from 'react'
 import { Badge } from './Badge'
+import { ProgressBar } from './ProgressBar'
 import { theme } from '../styles/atlassian-theme'
 import { GameDetail } from '../types/GameDetail'
+import { VisualizationTabs } from './VisualizationTabs'
+import { calculateStatistics, calculatePercentile } from '../utils/statistics'
 
 export interface SimulationResult {
   averageScore: number
@@ -20,11 +23,19 @@ export interface SimulationResult {
 interface SimulationResultsProps {
   result: SimulationResult | null
   isRunning: boolean
+  progress?: {
+    progress: number
+    completedGames: number
+    totalGames: number
+    currentAverage: number
+    estimatedTimeRemaining: number
+  }
 }
 
 export const SimulationResults: React.FC<SimulationResultsProps> = ({
   result,
-  isRunning
+  isRunning,
+  progress
 }) => {
   if (isRunning) {
     return (
@@ -36,36 +47,85 @@ export const SimulationResults: React.FC<SimulationResultsProps> = ({
         border: `1px solid ${theme.colors.border}`,
         boxShadow: theme.shadows.md,
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center'
+        flexDirection: 'column'
       }}>
+        <h3 style={{
+          margin: `0 0 ${theme.spacing.lg} 0`,
+          fontSize: theme.typography.fontSize.lg,
+          color: theme.colors.text,
+          fontWeight: theme.typography.fontWeight.semibold
+        }}>
+          シミュレーション結果
+        </h3>
+        
+        <div style={{ 
+          height: '80px', 
+          marginBottom: theme.spacing.lg,
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          {progress ? (
+            <div style={{ width: '100%' }}>
+              <ProgressBar
+                progress={progress.progress}
+                total={progress.totalGames}
+                completed={progress.completedGames}
+                currentAverage={progress.currentAverage}
+                estimatedTimeRemaining={progress.estimatedTimeRemaining}
+              />
+            </div>
+          ) : (
+            <div style={{ 
+              width: '100%', 
+              height: '60px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.background,
+              borderRadius: theme.borderRadius.md,
+              border: `1px dashed ${theme.colors.border}`,
+              color: theme.colors.textSubtle,
+              fontSize: theme.typography.fontSize.sm
+            }}>
+              シミュレーション開始前
+            </div>
+          )}
+        </div>
+        
         <div style={{
-          padding: theme.spacing.xl,
-          textAlign: 'center'
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
           <div style={{
-            width: '32px',
-            height: '32px',
-            border: `3px solid ${theme.colors.border}`,
-            borderRadius: '50%',
-            borderTopColor: theme.colors.primary,
-            animation: 'spin 1s ease-in-out infinite',
-            margin: `0 auto ${theme.spacing.lg} auto`
-          }} />
-          <div style={{
-            fontSize: theme.typography.fontSize.lg,
-            color: theme.colors.text,
-            fontWeight: theme.typography.fontWeight.medium
+            padding: theme.spacing.xl,
+            textAlign: 'center'
           }}>
-            シミュレーション実行中...
-          </div>
-          <div style={{
-            fontSize: theme.typography.fontSize.base,
-            color: theme.colors.textSubtle,
-            marginTop: theme.spacing.sm
-          }}>
-            Monte-Carlo シミュレーションを実行しています
+            <div style={{
+              width: '32px',
+              height: '32px',
+              border: `3px solid ${theme.colors.border}`,
+              borderRadius: '50%',
+              borderTopColor: theme.colors.primary,
+              animation: 'spin 1s ease-in-out infinite',
+              margin: `0 auto ${theme.spacing.lg} auto`
+            }} />
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              color: theme.colors.text,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              シミュレーション実行中...
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.base,
+              color: theme.colors.textSubtle,
+              marginTop: theme.spacing.sm
+            }}>
+              Monte-Carlo シミュレーションを実行しています
+            </div>
           </div>
         </div>
       </div>
@@ -82,30 +142,82 @@ export const SimulationResults: React.FC<SimulationResultsProps> = ({
         border: `1px solid ${theme.colors.border}`,
         boxShadow: theme.shadows.md,
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        flexDirection: 'column'
       }}>
+        <h3 style={{
+          margin: `0 0 ${theme.spacing.lg} 0`,
+          fontSize: theme.typography.fontSize.lg,
+          color: theme.colors.text,
+          fontWeight: theme.typography.fontWeight.semibold
+        }}>
+          シミュレーション結果
+        </h3>
+        
+        <div style={{ 
+          height: '80px', 
+          marginBottom: theme.spacing.lg,
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          {progress ? (
+            <div style={{ width: '100%' }}>
+              <ProgressBar
+                progress={progress.progress}
+                total={progress.totalGames}
+                completed={progress.completedGames}
+                currentAverage={progress.currentAverage}
+                estimatedTimeRemaining={progress.estimatedTimeRemaining}
+              />
+            </div>
+          ) : (
+            <div style={{ 
+              width: '100%', 
+              height: '60px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.background,
+              borderRadius: theme.borderRadius.md,
+              border: `1px dashed ${theme.colors.border}`,
+              color: theme.colors.textSubtle,
+              fontSize: theme.typography.fontSize.sm
+            }}>
+              シミュレーション開始前
+            </div>
+          )}
+        </div>
+        
         <div style={{
-          textAlign: 'center',
-          color: theme.colors.textSubtle
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
           <div style={{
-            fontSize: theme.typography.fontSize.xl,
-            marginBottom: theme.spacing.md
+            textAlign: 'center',
+            color: theme.colors.textSubtle
           }}>
-            📊
-          </div>
-          <div style={{
-            fontSize: theme.typography.fontSize.lg,
-            fontWeight: theme.typography.fontWeight.medium
-          }}>
-            シミュレーション結果
-          </div>
-          <div style={{
-            fontSize: theme.typography.fontSize.base,
-            marginTop: theme.spacing.sm
-          }}>
-            実験パラメータを設定してシミュレーションを開始してください
+            <div style={{
+              fontSize: theme.typography.fontSize.xl,
+              marginBottom: theme.spacing.md
+            }}>
+              📊
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              {!progress || progress.progress === 0 ? 'シミュレーション結果' : '実行完了'}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.base,
+              marginTop: theme.spacing.sm
+            }}>
+              {!progress || progress.progress === 0 
+                ? '実験パラメータを設定してシミュレーションを開始してください'
+                : 'シミュレーションが完了しました'
+              }
+            </div>
           </div>
         </div>
       </div>
@@ -160,6 +272,40 @@ export const SimulationResults: React.FC<SimulationResultsProps> = ({
             <span>総打席数: {result.gameDetail.totalAtBats}</span>
             <span>試合時間: {result.gameDetail.gameTime.toFixed(0)}ms</span>
           </div>
+        </div>
+        
+        <div style={{ 
+          height: '80px', 
+          marginBottom: theme.spacing.lg,
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          {progress ? (
+            <div style={{ width: '100%' }}>
+              <ProgressBar
+                progress={progress.progress}
+                total={progress.totalGames}
+                completed={progress.completedGames}
+                currentAverage={progress.currentAverage}
+                estimatedTimeRemaining={progress.estimatedTimeRemaining}
+              />
+            </div>
+          ) : (
+            <div style={{ 
+              width: '100%', 
+              height: '60px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.background,
+              borderRadius: theme.borderRadius.md,
+              border: `1px dashed ${theme.colors.border}`,
+              color: theme.colors.textSubtle,
+              fontSize: theme.typography.fontSize.sm
+            }}>
+              シミュレーション開始前
+            </div>
+          )}
         </div>
         
         {/* 詳細試合記録 - メイン表示 */}
@@ -267,30 +413,96 @@ export const SimulationResults: React.FC<SimulationResultsProps> = ({
   return (
     <div style={{
       flex: 1,
-      padding: theme.spacing.xl,
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.lg,
       border: `1px solid ${theme.colors.border}`,
-      boxShadow: theme.shadows.md
+      boxShadow: theme.shadows.md,
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column'
     }}>
+      {/* ヘッダー（固定） */}
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: theme.spacing.xl
+        padding: theme.spacing.xl,
+        borderBottom: `1px solid ${theme.colors.border}`,
+        backgroundColor: theme.colors.surface
       }}>
-        <h3 style={{
-          margin: 0,
-          fontSize: theme.typography.fontSize.lg,
-          color: theme.colors.text,
-          fontWeight: theme.typography.fontWeight.semibold
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: theme.spacing.xl
         }}>
-          シミュレーション結果
-        </h3>
-        <Badge variant="success" size="sm">
-          {result.totalGames.toLocaleString()}試合完了
-        </Badge>
+          <h3 style={{
+            margin: 0,
+            fontSize: theme.typography.fontSize.lg,
+            color: theme.colors.text,
+            fontWeight: theme.typography.fontWeight.semibold
+          }}>
+            シミュレーション結果
+          </h3>
+          <Badge variant="success" size="sm">
+            {result.totalGames.toLocaleString()}試合完了
+          </Badge>
+        </div>
+        
+        <div style={{ 
+          height: '80px',
+          marginBottom: theme.spacing.lg,
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          {progress && progress.progress >= 1.0 ? (
+            <div style={{ 
+              width: '100%', 
+              height: '60px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.successLight,
+              borderRadius: theme.borderRadius.md,
+              border: `1px solid ${theme.colors.success}`,
+              color: theme.colors.success,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              ✅ {progress.totalGames.toLocaleString()}試合完了
+            </div>
+          ) : progress && progress.progress > 0 ? (
+            <div style={{ width: '100%' }}>
+              <ProgressBar
+                progress={progress.progress}
+                total={progress.totalGames}
+                completed={progress.completedGames}
+                currentAverage={progress.currentAverage}
+                estimatedTimeRemaining={progress.estimatedTimeRemaining}
+              />
+            </div>
+          ) : (
+            <div style={{ 
+              width: '100%', 
+              height: '60px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.background,
+              borderRadius: theme.borderRadius.md,
+              border: `1px dashed ${theme.colors.border}`,
+              color: theme.colors.textSubtle,
+              fontSize: theme.typography.fontSize.sm
+            }}>
+              シミュレーション開始前
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* スクロール可能なコンテンツ */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: theme.spacing.xl
+      }}>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.lg }}>
         {/* 主要指標 */}
@@ -406,55 +618,21 @@ export const SimulationResults: React.FC<SimulationResultsProps> = ({
           </div>
         )}
 
-        {/* 簡易可視化 */}
-        <div style={{
-          padding: theme.spacing.lg,
-          backgroundColor: theme.colors.background,
-          borderRadius: theme.borderRadius.md,
-          border: `1px solid ${theme.colors.border}`
-        }}>
+        {/* Chart.js による可視化（タブ形式） */}
+        {result.scores && result.scores.length > 1 && (
           <div style={{
-            fontSize: theme.typography.fontSize.base,
-            fontWeight: theme.typography.fontWeight.semibold,
-            color: theme.colors.text,
-            marginBottom: theme.spacing.md
+            height: '450px', // 固定高さでスクロール対応
+            marginBottom: theme.spacing.lg
           }}>
-            得点分布（簡易表示）
+            <VisualizationTabs
+              scores={result.scores}
+              minScore={result.minScore}
+              maxScore={result.maxScore}
+              averageScore={result.averageScore}
+              improvementPercent={result.improvementPercent}
+            />
           </div>
-          
-          {/* 簡易ヒストグラム */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'end',
-            gap: '2px',
-            height: '80px',
-            marginBottom: theme.spacing.md
-          }}>
-            {Array.from({ length: 20 }, (_, i) => {
-              const height = Math.random() * 80 + 10 // サンプル表示
-              return (
-                <div
-                  key={i}
-                  style={{
-                    flex: 1,
-                    height: `${height}px`,
-                    backgroundColor: theme.colors.primary,
-                    opacity: 0.7,
-                    borderRadius: '2px 2px 0 0'
-                  }}
-                />
-              )
-            })}
-          </div>
-          
-          <div style={{
-            fontSize: theme.typography.fontSize.sm,
-            color: theme.colors.textSubtle,
-            textAlign: 'center'
-          }}>
-            得点分布の概形（実装予定: Chart.js による詳細グラフ）
-          </div>
-        </div>
+        )}
 
         {/* 統計詳細 */}
         <div style={{
@@ -469,21 +647,85 @@ export const SimulationResults: React.FC<SimulationResultsProps> = ({
             color: theme.colors.text,
             marginBottom: theme.spacing.md
           }}>
-            統計詳細
+            📈 統計詳細
           </div>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: theme.spacing.sm,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: theme.spacing.md,
             fontSize: theme.typography.fontSize.sm,
             color: theme.colors.textSubtle
           }}>
-            <div>分散: {result.variance.toFixed(3)}</div>
-            <div>試行回数: {result.totalGames.toLocaleString()}回</div>
-            <div>信頼区間: 95%</div>
-            <div>計算時間: {result.executionTime ? `${result.executionTime.toFixed(0)}ms` : '未計測'}</div>
+            <div style={{
+              padding: theme.spacing.sm,
+              backgroundColor: theme.colors.surface,
+              borderRadius: theme.borderRadius.sm,
+              border: `1px solid ${theme.colors.border}`
+            }}>
+              <div style={{ fontWeight: theme.typography.fontWeight.semibold, color: theme.colors.text }}>
+                基本統計
+              </div>
+              <div>分散: {result.variance.toFixed(3)}</div>
+              <div>標準偏差: {result.standardDeviation.toFixed(3)}</div>
+              {result.scores && (
+                <div>中央値: {calculatePercentile(result.scores, 50).toFixed(2)}</div>
+              )}
+            </div>
+            
+            <div style={{
+              padding: theme.spacing.sm,
+              backgroundColor: theme.colors.surface,
+              borderRadius: theme.borderRadius.sm,
+              border: `1px solid ${theme.colors.border}`
+            }}>
+              <div style={{ fontWeight: theme.typography.fontWeight.semibold, color: theme.colors.text }}>
+                実行情報
+              </div>
+              <div>試行回数: {result.totalGames.toLocaleString()}回</div>
+              <div>計算時間: {result.executionTime ? `${result.executionTime.toFixed(0)}ms` : '未計測'}</div>
+              <div>1試合あたり: {result.executionTime && result.totalGames ? `${(result.executionTime / result.totalGames).toFixed(2)}ms` : '未計測'}</div>
+            </div>
+
+            {result.scores && result.scores.length > 10 && (
+              <div style={{
+                padding: theme.spacing.sm,
+                backgroundColor: theme.colors.surface,
+                borderRadius: theme.borderRadius.sm,
+                border: `1px solid ${theme.colors.border}`
+              }}>
+                <div style={{ fontWeight: theme.typography.fontWeight.semibold, color: theme.colors.text }}>
+                  パーセンタイル
+                </div>
+                <div>90%tile: {calculatePercentile(result.scores, 90).toFixed(2)}</div>
+                <div>95%tile: {calculatePercentile(result.scores, 95).toFixed(2)}</div>
+                <div>99%tile: {calculatePercentile(result.scores, 99).toFixed(2)}</div>
+              </div>
+            )}
+
+            <div style={{
+              padding: theme.spacing.sm,
+              backgroundColor: theme.colors.surface,
+              borderRadius: theme.borderRadius.sm,
+              border: `1px solid ${theme.colors.border}`
+            }}>
+              <div style={{ fontWeight: theme.typography.fontWeight.semibold, color: theme.colors.text }}>
+                信頼性
+              </div>
+              <div>信頼区間: 95%</div>
+              {result.scores && (() => {
+                const stats = calculateStatistics(result.scores)
+                const margin = 1.96 * (result.standardDeviation / Math.sqrt(result.totalGames))
+                return (
+                  <>
+                    <div>下限: {(result.averageScore - margin).toFixed(2)}</div>
+                    <div>上限: {(result.averageScore + margin).toFixed(2)}</div>
+                  </>
+                )
+              })()}
+            </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

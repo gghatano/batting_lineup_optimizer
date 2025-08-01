@@ -38,7 +38,7 @@ export const SimulationParameters: React.FC<SimulationParametersProps> = ({
   const isValidParams = () => {
     const games = parseInt(numberOfGames)
     const iterations = parseInt(maxIterations)
-    return games > 0 && games <= 10000 && iterations > 0 && iterations <= 1000
+    return games > 0 && games <= 100000 && iterations > 0 && iterations <= 1000
   }
 
   const runBenchmarkTest = async () => {
@@ -158,7 +158,7 @@ export const SimulationParameters: React.FC<SimulationParametersProps> = ({
             fontSize: theme.typography.fontSize.sm,
             color: theme.colors.textSubtle
           }}>
-            1〜10,000試合
+            1〜100,000試合
             {estimatedTime && (
               <span style={{ color: theme.colors.primary, fontWeight: theme.typography.fontWeight.medium }}>
                 {' '}(予想: {estimatedTime})
