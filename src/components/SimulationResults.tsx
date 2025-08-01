@@ -713,7 +713,6 @@ export const SimulationResults: React.FC<SimulationResultsProps> = ({
               </div>
               <div>信頼区間: 95%</div>
               {result.scores && (() => {
-                const stats = calculateStatistics(result.scores)
                 const margin = 1.96 * (result.standardDeviation / Math.sqrt(result.totalGames))
                 return (
                   <>

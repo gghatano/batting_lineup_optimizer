@@ -10,12 +10,19 @@ export interface SimulationParams {
   optimizationMethod: 'none' | 'random' | 'heuristic'
   maxIterations: number
   showDetailedView?: boolean
+  simulationId?: string
+}
+
+// プログレス更新コールバックの型定義
+export interface ProgressCallback {
+  (progress: { completedGames: number; totalGames: number; progress: number; currentAverage: number; simulationId?: string }): void
 }
 
 // 統合されたシミュレーション実行関数
 export const runSimulation = async (
   lineup: Player[],
-  params: SimulationParams
+  params: SimulationParams,
+  onProgress?: ProgressCallback
 ): Promise<SimulationResult & { optimizationResult?: OptimizationResult, gameDetail?: GameDetail }> => {
   const startTime = performance.now()
   console.log(`🎯 シミュレーション開始: ${params.numberOfGames}試合, 最適化: ${params.optimizationMethod}, 詳細表示: ${params.showDetailedView}`)
@@ -48,27 +55,68 @@ export const runSimulation = async (
     // 基本シミュレーション実行
     let baseResult: SimulationResult
     
+    console.log(`🎮 シミュレーション実行方法の決定...`)
+    console.log(`📊 Web Worker利用可能: ${worker ? 'Yes' : 'No'}`)
+    console.log(`🔄 Web Worker実行中: ${worker ? worker.isSimulationRunning : 'N/A'}`)
+    
+    // 🚨 強制的にフォールバックを使用して問題を特定
+    console.log(`🚨 デバッグ: 強制的にフォールバック実行を使用`)
+    const fallbackStartTime = performance.now()
+    
+    // メインシミュレーション用のIDを生成
+    const simulationId = `main_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    console.log(`🎯 フォールバック用シミュレーションID: ${simulationId}`)
+    
+    // プログレス更新コールバックでIDを含める
+    const progressWithId = onProgress ? (progress: any) => {
+      onProgress({ ...progress, simulationId })
+    } : undefined
+    
+    baseResult = await runSimulationFallback(lineup, params, progressWithId)
+    const fallbackEndTime = performance.now()
+    console.log(`✅ 強制フォールバック完了: ${(fallbackEndTime - fallbackStartTime).toFixed(0)}ms`)
+    console.log(`📊 フォールバック結果: 平均${baseResult.averageScore.toFixed(2)}点, 範囲${baseResult.minScore}-${baseResult.maxScore}点`)
+    
+    // 元のコード（一時的にコメントアウト）
+    /*
     if (worker.isSimulationRunning) {
       console.log('⚠️ Web Worker使用中 - フォールバック使用')
       baseResult = await runSimulationFallback(lineup, params)
     } else {
       try {
-        console.log('🔄 Web Workerでシミュレーション実行中...')
+        console.log(`🚀 Web Workerでシミュレーション実行開始: ${params.numberOfGames}試合`)
+        const workerStartTime = performance.now()
         baseResult = await worker.runSimulation(lineup, params)
-        console.log('✅ Web Workerシミュレーション完了:', baseResult)
+        const workerEndTime = performance.now()
+        console.log(`✅ Web Workerシミュレーション完了: ${(workerEndTime - workerStartTime).toFixed(0)}ms`)
+        console.log(`📊 Web Worker結果: 平均${baseResult.averageScore.toFixed(2)}点, 範囲${baseResult.minScore}-${baseResult.maxScore}点`)
       } catch (error) {
-        console.warn('❌ Web Worker simulation failed, using fallback:', error)
+        console.warn('❌ Web Worker失敗, フォールバック使用:', error)
+        const fallbackStartTime = performance.now()
         baseResult = await runSimulationFallback(lineup, params)
-        console.log('✅ フォールバックシミュレーション完了:', baseResult)
+        const fallbackEndTime = performance.now()
+        console.log(`✅ フォールバック完了: ${(fallbackEndTime - fallbackStartTime).toFixed(0)}ms`)
       }
     }
+    */
 
     // 最適化実行（必要な場合）
     if (params.optimizationMethod !== 'none') {
+      console.log(`🔧 最適化実行開始: ${params.optimizationMethod}方式`)
       const optimizer = createOptimizer(params.optimizationMethod)
       
       try {
-        const optimizationResult = await optimizer.optimizeLineup(lineup, params)
+        // 最適化中はプログレス更新を無効化（2周問題を回避）
+        // 最適化用の異なるIDを使用してメインシミュレーションと区別
+        const optimizationParams = {
+          ...params,
+          simulationId: `opt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        }
+        console.log(`🔧 最適化用シミュレーションID: ${optimizationParams.simulationId}`)
+        
+        const optimizationResult = await optimizer.optimizeLineup(lineup, optimizationParams)
+        
+        console.log(`✅ 最適化完了: ${optimizationResult.improvementPercent.toFixed(2)}%改善`)
         
         return {
           ...baseResult,
@@ -76,7 +124,7 @@ export const runSimulation = async (
           optimizationResult
         }
       } catch (error) {
-        console.warn('Optimization failed:', error)
+        console.warn('❌ 最適化失敗:', error)
         // 最適化失敗時は基本結果のみ返す
         return baseResult
       }

@@ -35,8 +35,8 @@ export const HistoryGrid: React.FC<HistoryGridProps> = ({
 
   // 履歴のソート
   const sortedHistory = [...history].sort((a, b) => {
-    let aValue = a[sortField]
-    let bValue = b[sortField]
+    let aValue: any = a[sortField]
+    let bValue: any = b[sortField]
     
     if (sortField === 'timestamp') {
       aValue = (a.timestamp as Date).getTime()
@@ -46,8 +46,8 @@ export const HistoryGrid: React.FC<HistoryGridProps> = ({
       bValue = b.lineup.map(p => p.選手名).join('-')
     }
     
-    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
-    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
+    if (aValue! < bValue!) return sortDirection === 'asc' ? -1 : 1
+    if (aValue! > bValue!) return sortDirection === 'asc' ? 1 : -1
     return 0
   })
 

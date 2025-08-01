@@ -146,13 +146,10 @@ export class LineupOptimizer {
       numberOfGames: Math.min(params.numberOfGames, 1000) // 最大1000試合で評価
     }
 
-    try {
-      return await this.worker.runSimulation(lineup, evaluationParams)
-    } catch (error) {
-      // Web Worker失敗時はフォールバック
-      console.warn('Web Worker failed, using fallback simulation')
-      return await runSimulationFallback(lineup, evaluationParams)
-    }
+    // 🚨 修正: 最適化時は常にフォールバック（プログレス更新なし）を使用
+    // Web Workerを使うとプログレスバーが2周する問題が発生するため
+    console.log(`🔧 最適化評価: フォールバック使用 (${evaluationParams.numberOfGames}試合)`)
+    return await runSimulationFallback(lineup, evaluationParams, undefined) // プログレス更新を無効化
   }
 
   private generateNeighbor(lineup: Player[], iteration: number): { newLineup: Player[], swapPositions: [number, number] } {
@@ -281,11 +278,9 @@ export class RandomOptimizer {
       numberOfGames: Math.min(params.numberOfGames, 1000)
     }
 
-    try {
-      return await this.worker.runSimulation(lineup, evaluationParams)
-    } catch (error) {
-      return await runSimulationFallback(lineup, evaluationParams)
-    }
+    // 🚨 修正: 最適化時は常にフォールバック（プログレス更新なし）を使用
+    console.log(`🔧 ランダム最適化評価: フォールバック使用 (${evaluationParams.numberOfGames}試合)`)
+    return await runSimulationFallback(lineup, evaluationParams, undefined) // プログレス更新を無効化
   }
 }
 

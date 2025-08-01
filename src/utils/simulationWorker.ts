@@ -147,7 +147,7 @@ export const runSimulationFallback = async (
     }
   } catch (error) {
     console.error('❌ フォールバックでMonte-Carloシミュレーション実行エラー:', error)
-    console.error('📝 エラー詳細:', error.stack)
+    console.error('📝 エラー詳細:', error instanceof Error ? error.stack : String(error))
     
     // エラー時は代替のインライン実装を使用
     console.log(`🚨 緊急代替: インラインMonte-Carlo実装を使用`)

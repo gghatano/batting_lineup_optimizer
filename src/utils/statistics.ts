@@ -37,8 +37,8 @@ export const calculateStatistics = (data: number[]): StatisticalSummary => {
   
   // 中央値
   const median = n % 2 === 0
-    ? (sortedData[n / 2 - 1] + sortedData[n / 2]) / 2
-    : sortedData[Math.floor(n / 2)]
+    ? (sortedData[n / 2 - 1]! + sortedData[n / 2]!) / 2
+    : sortedData[Math.floor(n / 2)]!
 
   // 最頻値（モード）
   const frequency: Record<number, number> = {}
@@ -46,7 +46,7 @@ export const calculateStatistics = (data: number[]): StatisticalSummary => {
     frequency[val] = (frequency[val] || 0) + 1
   })
   const mode = Number(Object.keys(frequency).reduce((a, b) => 
-    frequency[Number(a)] > frequency[Number(b)] ? a : b
+    frequency[Number(a)]! > frequency[Number(b)]! ? a : b
   ))
 
   // 分散と標準偏差
@@ -54,15 +54,15 @@ export const calculateStatistics = (data: number[]): StatisticalSummary => {
   const standardDeviation = Math.sqrt(variance)
 
   // 最小値・最大値・範囲
-  const min = sortedData[0]
-  const max = sortedData[n - 1]
+  const min = sortedData[0]!
+  const max = sortedData[n - 1]!
   const range = max - min
 
   // 四分位数
   const q1Index = Math.floor(n * 0.25)
   const q3Index = Math.floor(n * 0.75)
-  const q1 = n >= 4 ? sortedData[q1Index] : min
-  const q3 = n >= 4 ? sortedData[q3Index] : max
+  const q1 = n >= 4 ? sortedData[q1Index]! : min
+  const q3 = n >= 4 ? sortedData[q3Index]! : max
   const iqr = q3 - q1
 
   // 歪度（スキューネス）

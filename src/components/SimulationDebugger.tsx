@@ -131,7 +131,7 @@ export const SimulationDebugger: React.FC = () => {
           gap: theme.spacing.sm
         }}>
           <span>🔍 シミュレーション デバッガー</span>
-          <Badge variant="secondary" size="sm">
+          <Badge variant="default" size="sm">
             {logs.length}
           </Badge>
         </div>
@@ -202,7 +202,7 @@ export const SimulationDebugger: React.FC = () => {
                   {log.timestamp}
                 </span>
                 <Badge
-                  variant={log.level === 'info' ? 'primary' : log.level === 'warn' ? 'secondary' : 'danger'}
+                  variant={log.level === 'info' ? 'primary' : log.level === 'warn' ? 'warning' : 'danger'}
                   size="sm"
                   style={{
                     fontSize: '10px',
