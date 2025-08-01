@@ -68,7 +68,7 @@ export const runSimulation = async (
     console.log(`🎯 フォールバック用シミュレーションID: ${simulationId}`)
     
     // プログレス更新コールバックでIDを含める
-    const progressWithId = onProgress ? (progress: any) => {
+    const progressWithId = onProgress ? (progress: {completedGames: number; totalGames: number; progress: number; currentAverage: number}) => {
       onProgress({ ...progress, simulationId })
     } : undefined
     
@@ -165,7 +165,7 @@ export const runBenchmark = async (
     const averageTimePerGame = totalTime / benchmarkParams.numberOfGames
     
     return { averageTimePerGame, totalTime }
-  } catch (error) {
+  } catch {
     // フォールバック実装
     const scores: number[] = []
     

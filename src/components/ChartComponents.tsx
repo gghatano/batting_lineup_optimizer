@@ -102,8 +102,8 @@ export const ScoreDistributionChart: React.FC<ScoreDistributionChartProps> = ({
         borderWidth: 1,
         cornerRadius: 8,
         callbacks: {
-          title: (context: any) => `得点範囲: ${context[0].label}`,
-          label: (context: any) => `試合数: ${context.parsed.y}回 (${((context.parsed.y / scores.length) * 100).toFixed(1)}%)`
+          title: (context: unknown[]) => `得点範囲: ${(context[0] as {label: string}).label}`,
+          label: (context: {parsed: {y: number}}) => `試合数: ${context.parsed.y}回 (${((context.parsed.y / scores.length) * 100).toFixed(1)}%)`
         }
       }
     },
@@ -258,7 +258,7 @@ export const StatisticsSummaryChart: React.FC<StatisticsBoxplotProps> = ({
         borderWidth: 1,
         cornerRadius: 8,
         callbacks: {
-          label: (context: any) => `${context.dataset.label}: ${context.parsed.x.toFixed(2)}点`
+          label: (tooltipItem: any) => `${tooltipItem.dataset.label || 'データ'}: ${tooltipItem.parsed.x.toFixed(2)}点`
         }
       }
     },

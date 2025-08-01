@@ -59,21 +59,23 @@ export class SimulationWorker {
             options?.onProgress?.(payload as ProgressUpdate)
             break
             
-          case 'complete':
+          case 'complete': {
             this.isRunning = false
             const result = payload as SimulationResult
             options?.onComplete?.(result)
             resolve(result)
             this.worker!.removeEventListener('message', handleMessage)
             break
+          }
             
-          case 'error':
+          case 'error': {
             this.isRunning = false
             const errorMessage = payload as string
             options?.onError?.(errorMessage)
             reject(new Error(errorMessage))
             this.worker!.removeEventListener('message', handleMessage)
             break
+          }
         }
       }
 
@@ -312,6 +314,7 @@ const runInlineMonteCarloSimulation = async (
 }
 
 // 緊急時の簡易シミュレーション（最後の手段）
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const runLegacySimulation = async (
   lineup: Player[],
   params: SimulationParams,

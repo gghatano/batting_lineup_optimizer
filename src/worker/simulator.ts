@@ -11,7 +11,7 @@ export interface SimulationParams {
 
 export interface SimulationMessage {
   type: 'start' | 'progress' | 'complete' | 'error'
-  payload?: any
+  payload?: unknown
 }
 
 export interface SimulationRequest {
@@ -188,7 +188,6 @@ const simulateInning = (
       outs++
       runsScored = advanceRunners(baseState, result.type, outs - 1) // アウトカウント増加前の状態で計算
     } else {
-      const oldRunners = baseState.runners
       runsScored = advanceRunners(baseState, result.type, outs)
       
       // 本塁打の場合は打者も得点
@@ -295,139 +294,135 @@ export const runMonteCarloSimulation = async (
   params: SimulationParams,
   onProgress?: (progress: ProgressUpdate) => void
 ): Promise<SimulationResult> => {
-  try {
-      const startTime = performance.now()
-      console.log(`🚀 Monte-Carloシミュレーション開始: ${params.numberOfGames}試合`)
+  const startTime = performance.now()
+  console.log(`🚀 Monte-Carloシミュレーション開始: ${params.numberOfGames}試合`)
+  
+  // 各選手の確率テーブルを事前計算
+  const probabilityTables = lineup.map(createProbabilityTable)
+  const cumulativeTables = probabilityTables.map(createCumulativeProbabilities)
+  
+  console.log(`📊 確率テーブル生成完了: ${lineup.length}選手`)
+  console.log(`🎲 最初の選手の確率例: `, probabilityTables[0])
+  
+  const scores: number[] = []
+  // プログレス更新の頻度を調整 (最大1000試合間隔、最小100試合間隔)
+  const progressInterval = Math.max(100, Math.min(1000, Math.floor(params.numberOfGames / 100)))
+  console.log(`📊 プログレス更新間隔: ${progressInterval}試合ごと`)
+  
+  console.log(`🎮 ゲームループ開始: ${params.numberOfGames}試合`)
+  
+  // 初回プログレス更新（0%で開始）
+  if (onProgress) {
+    console.log(`🚀 初回プログレス更新送信`)
+    onProgress({
+      completedGames: 0,
+      totalGames: params.numberOfGames,
+      progress: 0,
+      currentAverage: 0
+    })
+  }
+  
+  // 詳細データ収集の判定（1000試合以下の場合のみ）
+  const shouldCollectDetails = params.numberOfGames <= 1000
+  const gameDetails: GameDetail[] = []
+  
+  for (let game = 0; game < params.numberOfGames; game++) {
+    const gameStartTime = performance.now()
+    const gameResult = simulateGame(
+      lineup, 
+      probabilityTables, 
+      cumulativeTables, 
+      shouldCollectDetails, 
+      game + 1
+    )
+    const gameEndTime = performance.now()
+    const gameTime = gameEndTime - gameStartTime
+    
+    if (shouldCollectDetails && typeof gameResult === 'object') {
+      // 詳細データを保存
+      gameDetails.push(gameResult)
+      scores.push(gameResult.totalScore)
+    } else {
+      // 基本データのみ
+      scores.push(gameResult as number)
+    }
+    
+    // デバッグ用：最初の10試合の詳細ログ + 実行時間
+    if (game < 10) {
+      const displayScore = shouldCollectDetails && typeof gameResult === 'object' 
+        ? gameResult.totalScore 
+        : gameResult as number
+      console.log(`🏆 試合${game + 1}: ${displayScore}点 (${gameTime.toFixed(2)}ms)`)
+    }
+    
+    // デバッグ用：100試合ごとに平均ゲーム時間をログ
+    if ((game + 1) % 100 === 0) {
+      const avgGameTime = (performance.now() - startTime) / (game + 1)
+      console.log(`⏱️ 100試合経過: 平均ゲーム時間 ${avgGameTime.toFixed(3)}ms`)
+    }
+    
+    // プログレス更新
+    if (onProgress && (game + 1) % progressInterval === 0) {
+      const currentAverage = scores.reduce((a, b) => a + b, 0) / scores.length
+      const progress = (game + 1) / params.numberOfGames
       
-      // 各選手の確率テーブルを事前計算
-      const probabilityTables = lineup.map(createProbabilityTable)
-      const cumulativeTables = probabilityTables.map(createCumulativeProbabilities)
+      console.log(`📈 進捗: ${(progress * 100).toFixed(1)}% (${game + 1}/${params.numberOfGames}試合), 平均: ${currentAverage.toFixed(2)}点`)
       
-      console.log(`📊 確率テーブル生成完了: ${lineup.length}選手`)
-      console.log(`🎲 最初の選手の確率例: `, probabilityTables[0])
-      
-      const scores: number[] = []
-      // プログレス更新の頻度を調整 (最大1000試合間隔、最小100試合間隔)
-      const progressInterval = Math.max(100, Math.min(1000, Math.floor(params.numberOfGames / 100)))
-      console.log(`📊 プログレス更新間隔: ${progressInterval}試合ごと`)
-      
-      console.log(`🎮 ゲームループ開始: ${params.numberOfGames}試合`)
-      
-      // 初回プログレス更新（0%で開始）
-      if (onProgress) {
-        console.log(`🚀 初回プログレス更新送信`)
-        onProgress({
-          completedGames: 0,
-          totalGames: params.numberOfGames,
-          progress: 0,
-          currentAverage: 0
-        })
-      }
-      
-      // 詳細データ収集の判定（1000試合以下の場合のみ）
-      const shouldCollectDetails = params.numberOfGames <= 1000
-      const gameDetails: GameDetail[] = []
-      
-      for (let game = 0; game < params.numberOfGames; game++) {
-        const gameStartTime = performance.now()
-        const gameResult = simulateGame(
-          lineup, 
-          probabilityTables, 
-          cumulativeTables, 
-          shouldCollectDetails, 
-          game + 1
-        )
-        const gameEndTime = performance.now()
-        const gameTime = gameEndTime - gameStartTime
-        
-        if (shouldCollectDetails && typeof gameResult === 'object') {
-          // 詳細データを保存
-          gameDetails.push(gameResult)
-          scores.push(gameResult.totalScore)
-        } else {
-          // 基本データのみ
-          scores.push(gameResult as number)
-        }
-        
-        // デバッグ用：最初の10試合の詳細ログ + 実行時間
-        if (game < 10) {
-          const displayScore = shouldCollectDetails && typeof gameResult === 'object' 
-            ? gameResult.totalScore 
-            : gameResult as number
-          console.log(`🏆 試合${game + 1}: ${displayScore}点 (${gameTime.toFixed(2)}ms)`)
-        }
-        
-        // デバッグ用：100試合ごとに平均ゲーム時間をログ
-        if ((game + 1) % 100 === 0) {
-          const avgGameTime = (performance.now() - startTime) / (game + 1)
-          console.log(`⏱️ 100試合経過: 平均ゲーム時間 ${avgGameTime.toFixed(3)}ms`)
-        }
-        
-        // プログレス更新
-        if (onProgress && (game + 1) % progressInterval === 0) {
-          const currentAverage = scores.reduce((a, b) => a + b, 0) / scores.length
-          const progress = (game + 1) / params.numberOfGames
-          
-          console.log(`📈 進捗: ${(progress * 100).toFixed(1)}% (${game + 1}/${params.numberOfGames}試合), 平均: ${currentAverage.toFixed(2)}点`)
-          
-          onProgress({
-            completedGames: game + 1,
-            totalGames: params.numberOfGames,
-            progress,
-            currentAverage,
-            simulationId: params.simulationId
-          })
-        }
-        
-        // 1000試合ごとに中間結果をログ
-        if ((game + 1) % 1000 === 0) {
-          const currentAverage = scores.reduce((a, b) => a + b, 0) / scores.length
-          console.log(`🎯 中間結果 ${game + 1}試合: 平均${currentAverage.toFixed(2)}点`)
-        }
-        
-        // UIブロッキングを防ぐため少数の試合ごとに制御を戻す
-        if (game % 1000 === 0 && game > 0) {
-          await new Promise(resolve => setTimeout(resolve, 0))
-        }
-      }
-      
-      const endTime = performance.now()
-      const executionTime = endTime - startTime
-      
-      console.log(`⏱️ シミュレーション実行時間: ${executionTime.toFixed(0)}ms`)
-      console.log(`🎯 全${params.numberOfGames}試合完了`)
-      
-      // 統計計算（メモリ効率化: 展開演算子を使わない）
-      const averageScore = scores.reduce((a, b) => a + b, 0) / scores.length
-      const variance = scores.reduce((acc, score) => acc + Math.pow(score - averageScore, 2), 0) / scores.length
-      const standardDeviation = Math.sqrt(variance)
-      
-      // 🚨 修正: 大きな配列での展開演算子クラッシュを回避
-      let minScore = scores[0] || 0
-      let maxScore = scores[0] || 0
-      for (let i = 1; i < scores.length; i++) {
-        const score = scores[i]!
-        if (score < minScore) minScore = score
-        if (score > maxScore) maxScore = score
-      }
-      
-      console.log(`📊 最終統計: 平均${averageScore.toFixed(2)}点, 範囲${minScore}-${maxScore}点, 標準偏差${standardDeviation.toFixed(2)}`)
-      console.log(`⚡ パフォーマンス: ${(params.numberOfGames / (executionTime / 1000)).toFixed(0)}試合/秒`)
-      
-      return {
-        averageScore,
-        variance,
-        standardDeviation,
-        minScore,
-        maxScore,
+      onProgress({
+        completedGames: game + 1,
         totalGames: params.numberOfGames,
-        scores,
-        executionTime,
-        gameDetails: shouldCollectDetails ? gameDetails : undefined,
-        hasDetailedData: shouldCollectDetails
-      }
-  } catch (error) {
-    throw error
+        progress,
+        currentAverage,
+        simulationId: params.simulationId
+      })
+    }
+    
+    // 1000試合ごとに中間結果をログ
+    if ((game + 1) % 1000 === 0) {
+      const currentAverage = scores.reduce((a, b) => a + b, 0) / scores.length
+      console.log(`🎯 中間結果 ${game + 1}試合: 平均${currentAverage.toFixed(2)}点`)
+    }
+    
+    // UIブロッキングを防ぐため少数の試合ごとに制御を戻す
+    if (game % 1000 === 0 && game > 0) {
+      await new Promise(resolve => setTimeout(resolve, 0))
+    }
+  }
+  
+  const endTime = performance.now()
+  const executionTime = endTime - startTime
+  
+  console.log(`⏱️ シミュレーション実行時間: ${executionTime.toFixed(0)}ms`)
+  console.log(`🎯 全${params.numberOfGames}試合完了`)
+  
+  // 統計計算（メモリ効率化: 展開演算子を使わない）
+  const averageScore = scores.reduce((a, b) => a + b, 0) / scores.length
+  const variance = scores.reduce((acc, score) => acc + Math.pow(score - averageScore, 2), 0) / scores.length
+  const standardDeviation = Math.sqrt(variance)
+  
+  // 🚨 修正: 大きな配列での展開演算子クラッシュを回避
+  let minScore = scores[0] || 0
+  let maxScore = scores[0] || 0
+  for (let i = 1; i < scores.length; i++) {
+    const score = scores[i]!
+    if (score < minScore) minScore = score
+    if (score > maxScore) maxScore = score
+  }
+  
+  console.log(`📊 最終統計: 平均${averageScore.toFixed(2)}点, 範囲${minScore}-${maxScore}点, 標準偏差${standardDeviation.toFixed(2)}`)
+  console.log(`⚡ パフォーマンス: ${(params.numberOfGames / (executionTime / 1000)).toFixed(0)}試合/秒`)
+  
+  return {
+    averageScore,
+    variance,
+    standardDeviation,
+    minScore,
+    maxScore,
+    totalGames: params.numberOfGames,
+    scores,
+    executionTime,
+    gameDetails: shouldCollectDetails ? gameDetails : undefined,
+    hasDetailedData: shouldCollectDetails
   }
 }
 

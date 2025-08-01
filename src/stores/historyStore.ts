@@ -64,11 +64,11 @@ export const useHistoryStore = create<HistoryState>()(
       name: 'batting-lineup-history', // localStorage キー名
       version: 1,
       // 履歴データのマイグレーション（必要に応じて）
-      migrate: (persistedState: any, version: number) => {
+      migrate: (persistedState: unknown, version: number) => {
         if (version === 0) {
           // 古いバージョンからの移行処理
           return {
-            history: persistedState.history || []
+            history: (persistedState as any)?.history || []
           }
         }
         return persistedState as HistoryState
@@ -171,7 +171,7 @@ export const importHistory = (jsonData: string): HistoryEntry[] => {
       throw new Error('無効なデータ形式です')
     }
     
-    return importData.data.map((entry: any) => ({
+    return importData.data.map((entry: {timestamp: string}) => ({
       ...entry,
       timestamp: new Date(entry.timestamp),
       id: `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`

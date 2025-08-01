@@ -35,8 +35,8 @@ export const HistoryGrid: React.FC<HistoryGridProps> = ({
 
   // 履歴のソート
   const sortedHistory = [...history].sort((a, b) => {
-    let aValue: any = a[sortField]
-    let bValue: any = b[sortField]
+    let aValue: unknown = a[sortField]
+    let bValue: unknown = b[sortField]
     
     if (sortField === 'timestamp') {
       aValue = (a.timestamp as Date).getTime()

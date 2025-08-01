@@ -4,7 +4,7 @@ import { ProgressBar } from './ProgressBar'
 import { theme } from '../styles/atlassian-theme'
 import { GameDetail } from '../types/GameDetail'
 import { VisualizationTabs } from './VisualizationTabs'
-import { calculateStatistics, calculatePercentile } from '../utils/statistics'
+import { calculatePercentile } from '../utils/statistics'
 
 export interface SimulationResult {
   averageScore: number
