@@ -68,7 +68,7 @@ export const useHistoryStore = create<HistoryState>()(
         if (version === 0) {
           // 古いバージョンからの移行処理
           return {
-            history: (persistedState as any)?.history || []
+            history: (persistedState as {history?: HistoryEntry[]})?.history || []
           }
         }
         return persistedState as HistoryState

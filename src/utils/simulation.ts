@@ -53,8 +53,6 @@ export const runSimulation = async (
   
   try {
     // 基本シミュレーション実行
-    let baseResult: SimulationResult
-    
     console.log(`🎮 シミュレーション実行方法の決定...`)
     console.log(`📊 Web Worker利用可能: ${worker ? 'Yes' : 'No'}`)
     console.log(`🔄 Web Worker実行中: ${worker ? worker.isSimulationRunning : 'N/A'}`)
@@ -72,7 +70,7 @@ export const runSimulation = async (
       onProgress({ ...progress, simulationId })
     } : undefined
     
-    baseResult = await runSimulationFallback(lineup, params, progressWithId)
+    const baseResult = await runSimulationFallback(lineup, params, progressWithId)
     const fallbackEndTime = performance.now()
     console.log(`✅ 強制フォールバック完了: ${(fallbackEndTime - fallbackStartTime).toFixed(0)}ms`)
     console.log(`📊 フォールバック結果: 平均${baseResult.averageScore.toFixed(2)}点, 範囲${baseResult.minScore}-${baseResult.maxScore}点`)

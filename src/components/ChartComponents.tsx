@@ -258,7 +258,7 @@ export const StatisticsSummaryChart: React.FC<StatisticsBoxplotProps> = ({
         borderWidth: 1,
         cornerRadius: 8,
         callbacks: {
-          label: (tooltipItem: any) => `${tooltipItem.dataset.label || 'データ'}: ${tooltipItem.parsed.x.toFixed(2)}点`
+          label: (tooltipItem: {dataset: {label?: string}, parsed: {x: number}}) => `${tooltipItem.dataset.label || 'データ'}: ${tooltipItem.parsed.x.toFixed(2)}点`
         }
       }
     },
