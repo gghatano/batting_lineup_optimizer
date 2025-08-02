@@ -61,6 +61,8 @@ jobs:
         path: ./dist
 
   deploy:
+    # Only deploy from main branch or when manually triggered
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
