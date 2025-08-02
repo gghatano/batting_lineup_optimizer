@@ -5,7 +5,8 @@ import { resolve } from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: process.env.NODE_ENV === 'production' ? '/batting-lineup-optimizer/' : '/',
+  // GitHub Pages用のbaseパス設定（環境変数で制御）
+  base: process.env.VITE_BASE_PATH || '/',
   root: resolve(__dirname, '..'),
   worker: {
     format: 'es'
