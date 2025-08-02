@@ -11,7 +11,7 @@ on:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -22,7 +22,87 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
+    # Only deploy from main branch or when manually triggered
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # git worktreeのために全履歴を取得
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Type check
+      run: npm run type-check
+      
+    - name: Lint
+      run: npm run lint
+      
+    - name: Build
+      run: npm run build
+      env:
+        NODE_ENV: production
+        VITE_BASE_PATH: /
+        VITE_DATA_MODE: remote
+        VITE_REMOTE_CSV_URL: https://docs.google.com/spreadsheets/d/18OlCqMkP8gNGskMy-NWRXU8Cfb4F7K5g7FelTauhLn4/edit?usp=sharing
+        
+    - name: Setup git user
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+    - name: Deploy to gh-pages using git worktree
+      run: |
+        # gh-pagesブランチの存在確認と作成
+        if ! git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+          echo "Creating new gh-pages branch"
+          git switch --orphan gh-pages
+          git rm -rf .
+          echo "GitHub Pages placeholder" > README.md
+          git add README.md
+          git commit -m "Initial gh-pages commit"
+          git push origin gh-pages
+          git switch main
+        fi
+        
+        # distディレクトリ専用のworktreeを作成
+        rm -rf gh-pages-worktree
+        git worktree add gh-pages-worktree gh-pages
+        
+        # gh-pagesブランチの内容をクリア（.gitを除く）
+        find gh-pages-worktree -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+        
+        # ビルド成果物をコピー
+        cp -r dist/* gh-pages-worktree/
+        
+        # 変更をコミット・プッシュ
+        cd gh-pages-worktree
+        git add .
+        if git diff --staged --quiet; then
+          echo "No changes to deploy"
+        else
+          git commit -m "Deploy: $(date '+%Y-%m-%d %H:%M:%S')"
+          git push origin gh-pages
+        fi
+        
+        # worktreeをクリーンアップ
+        cd ..
+        git worktree remove gh-pages-worktree
+        
+
+  # developブランチ用のCIテストのみ実行
+  test:
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     
     steps:
@@ -44,34 +124,10 @@ jobs:
     - name: Lint
       run: npm run lint
       
-    - name: Build
+    - name: Build test
       run: npm run build
       env:
         NODE_ENV: production
-        VITE_BASE_PATH: /batting-lineup-optimizer/
+        VITE_BASE_PATH: /
         VITE_DATA_MODE: remote
         VITE_REMOTE_CSV_URL: https://docs.google.com/spreadsheets/d/18OlCqMkP8gNGskMy-NWRXU8Cfb4F7K5g7FelTauhLn4/edit?usp=sharing
-        
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-      with:
-        enablement: true
-        token: ${{ secrets.GITHUB_TOKEN }}
-      
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: ./dist
-
-  deploy:
-    # Only deploy from main branch or when manually triggered
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
