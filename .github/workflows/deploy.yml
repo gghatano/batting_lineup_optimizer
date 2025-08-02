@@ -55,6 +55,13 @@ jobs:
         enablement: true
         token: ${{ secrets.GITHUB_TOKEN }}
       
+    - name: Debug - List dist contents
+      run: |
+        echo "Contents of dist directory:"
+        ls -la dist/
+        echo "Contents of dist/assets directory:"
+        ls -la dist/assets/ || echo "assets directory not found"
+      
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
