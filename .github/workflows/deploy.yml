@@ -54,7 +54,7 @@ jobs:
         NODE_ENV: production
         VITE_BASE_PATH: /
         VITE_DATA_MODE: remote
-        VITE_REMOTE_CSV_URL: https://docs.google.com/spreadsheets/d/18OlCqMkP8gNGskMy-NWRXU8Cfb4F7K5g7FelTauhLn4/edit?usp=sharing
+        VITE_REMOTE_CSV_URL: https://docs.google.com/spreadsheets/d/18OlCqMkP8gNGskMy-NWRXU8Cfb4F7K5g7FelTauhLn4/export?format=csv&gid=0
         
     - name: Setup git user
       run: |
@@ -130,4 +130,4 @@ jobs:
         NODE_ENV: production
         VITE_BASE_PATH: /
         VITE_DATA_MODE: remote
-        VITE_REMOTE_CSV_URL: https://docs.google.com/spreadsheets/d/18OlCqMkP8gNGskMy-NWRXU8Cfb4F7K5g7FelTauhLn4/edit?usp=sharing
+        VITE_REMOTE_CSV_URL: https://docs.google.com/spreadsheets/d/18OlCqMkP8gNGskMy-NWRXU8Cfb4F7K5g7FelTauhLn4/export?format=csv&gid=0
